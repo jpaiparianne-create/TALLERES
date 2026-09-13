@@ -1,0 +1,110 @@
+import cv2
+import numpy as np
+import os
+
+class AnalizadorMonedas:
+    """
+    Clase para procesar una imagen de monedas y clasificarlas por tamaño.
+    Implementa: Conversión a grises, Umbralización, Contornos y Lógica de Área.
+    """
+
+    def __init__(self, umbral_area=12000):
+        """
+        Inicializa el analizador.
+        Args:
+            umbral_area: Valor en píxeles para definir si una moneda es grande (Azul) o pequeña (Roja).
+        """
+        self.umbral_area = umbral_area
+        # Definir colores para la visualización (formato BGR)
+        self.COLOR_AZUL = (255, 0, 0)   # Objeto grande
+        self.COLOR_ROJO = (0, 0, 255)   # Objeto pequeño
+        self.COLOR_VERDE = (0, 255, 0)  # Contorno general
+
+    def procesar_imagen(self, ruta_imagen):
+        """
+        Ejecuta el pipeline completo de visión por computador sobre la imagen.
+        """
+        # 1. Carga de Imagen
+        if not os.path.exists(ruta_imagen):
+            print(f"[ERROR] No se encontró la imagen: {ruta_imagen}")
+            return
+        
+        imagen_color = cv2.imread(ruta_imagen)
+        print(f"[INFO] Imagen '{ruta_imagen}' cargada correctamente.")
+
+        # 2. Pipeline de Procesamiento
+        # A. Conversión a Escala de Grises
+        imagen_gris = cv2.cvtColor(imagen_color, cv2.COLOR_BGR2GRAY)
+        
+        # B. Umbralización (Binarización) - Método Otsu para ajuste automático
+        _, imagen_binaria = cv2.threshold(imagen_gris, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+        
+        # C. Detección de Contornos
+        contornos, _ = cv2.findContours(imagen_binaria, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        print(f"[INFO] Se detectaron {len(contornos)} objetos (monedas).")
+
+        # 3. Análisis y Clasificación (Lógica de Área)
+        imagen_resultado = imagen_color.copy()
+        
+        print("\n--- Reporte de Áreas ---")
+        for i, cnt in enumerate(contornos):
+            # Calcular el área del contorno en píxeles
+            area = cv2.contourArea(cnt)
+            
+            # Obtener el Bounding Box (x, y, ancho, alto)
+            x, y, w, h = cv2.boundingRect(cnt)
+            
+            # Lógica de clasificación
+            if area > self.umbral_area:
+                # Moneda Grande -> Cuadro Azul
+                color_bbox = self.COLOR_AZUL
+                tipo = "GRANDE"
+            else:
+                # Moneda Pequeña -> Cuadro Rojo
+                color_bbox = self.COLOR_ROJO
+                tipo = "PEQUEÑA"
+
+            # Dibujar el Bounding Box en la imagen de resultado
+            cv2.rectangle(imagen_resultado, (x, y), (x+w, y+h), color_bbox, 2)
+            
+            # Opcional: Dibujar el contorno original en verde
+            cv2.drawContours(imagen_resultado, [cnt], -1, self.COLOR_VERDE, 1)
+            
+            # Poner texto con el área y clasificación sobre el cuadro
+            cv2.putText(imagen_resultado, f"{tipo} ({area:.0f}px)", (x, y - 10), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, color_bbox, 1)
+
+            print(f"Moneda {i+1}: Área = {area:.0f} píxeles. Clasificación: {tipo}")
+
+        print("------------------------\n")
+
+        # 4. Visualización Final
+        # Muestra la máscara binaria (intermedia) y el resultado final.
+        cv2.imshow("1. Mascara Binaria (Procesada)", imagen_binaria)
+        cv2.imshow("2. Resultado de Clasificacion (Azul=Grande, Rojo=Pequeño)", imagen_resultado)
+        
+        print("[INFO] Mostrando resultados visuales. Presione 'q' para cerrar las ventanas.")
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
+
+# ==============================================================================
+# BLOQUE DE EJECUCIÓN PRINCIPAL
+# ==============================================================================
+if __name__ == "__main__":
+    print("================================================================")
+    print("   SESIÓN Práctica: CLASIFICADOR DE MONEDAS POR ÁREA CON OPENCV  ")
+    print("================================================================")
+
+    # Nombre de tu imagen de entrada (asegúrate que esté en la misma carpeta)
+    archivo_entrada = 'monedas.jpg'
+
+    # Instanciar el analizador
+    # El umbral de área se ha ajustado a 12,000 píxeles para separar tus monedas.
+    analizador = AnalizadorMonedas(umbral_area=12000)
+    
+    # Ejecutar el proceso
+    analizador.procesar_imagen(archivo_entrada)
+
+    print("================================================================")
