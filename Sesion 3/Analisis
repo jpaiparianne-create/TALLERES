@@ -1,0 +1,33 @@
+# Taller Analítico 1: Función Escalón
+
+## 1. Aplicación de umbralización binaria con $T = 135$
+Para obtener la matriz resultante, evaluamos cada píxel ($I_{ij}$) con la regla estándar de umbralización: si el valor es mayor a $T = 135$, se convierte en $255$ (blanco); de lo contrario, se convierte en $0$ (negro).
+
+* **Fila 1:** 
+  * $80 \le 135 \rightarrow 0$
+  * $120 \le 135 \rightarrow 0$
+  * $140 > 135 \rightarrow 255$
+* **Fila 2:** 
+  * $90 \le 135 \rightarrow 0$
+  * $200 > 135 \rightarrow 255$
+  * $210 > 135 \rightarrow 255$
+* **Fila 3:** 
+  * $50 \le 135 \rightarrow 0$
+  * $130 \le 135 \rightarrow 0$
+  * $250 > 135 \rightarrow 255$
+
+### Matriz Resultante:
+$$
+\begin{bmatrix} 
+0 & 0 & 255 \\ 
+0 & 255 & 255 \\ 
+0 & 0 & 255 
+\end{bmatrix}
+$$
+
+---
+
+## 2. Análisis del error al elegir $T = 135$ (cuando el objetivo era aislar valores mayores a 100)
+
+* **¿Cuál fue el error?** El umbral se fijó en un valor superior al deseado ($135$ en lugar de $100$). Esto deja fuera del rango de primer plano a los píxeles cuya intensidad se encuentra entre $101$ y $135$ (en este caso específico, el **$120$** de la posición $(0,1)$ y el **$130$** de la posición $(2,1)$).
+* **Efecto visual en la imagen segmentada:** Al ignorar estos valores intermedios, el objeto sufrirá una **pérdida de información (subsegmentación o fragmentación)**. Visualmente, el objeto se verá incompleto, con huecos negros "internos" o bordes recortados artificialmente, ya que partes reales del objeto que medían entre 100 y 135 fueron tratadas erróneamente como fondo ($0$).
