@@ -1,1 +1,37 @@
+# ==============================================================================
+# TALLER 10: IMPLEMENTACIÓN DE SVM (LINEAL VS RBF)
+# ==============================================================================
 
+import numpy as np
+from sklearn.svm import SVC
+
+# 1. Dataset original con el nuevo punto [5,5] añadido (Etiquetado como 0 - Clase A)
+X = np.array([
+    [2, 2],
+    [3, 3],
+    [4, 2],
+    [6, 6],
+    [7, 8],
+    [8, 7],
+    [5, 5]  # Punto añadido para forzar el fallo del kernel lineal
+])
+Y = np.array([0, 0, 0, 1, 1, 1, 0])
+
+print("--- PRUEBA 1: KERNEL LINEAL ---")
+modelo_lineal = SVC(kernel='linear')
+modelo_lineal.fit(X, Y)
+print("Vectores de Soporte (Lineal):")
+print(modelo_lineal.support_vectors_)
+
+print("\n--- PRUEBA 2: KERNEL RBF (TRUCO DEL KERNEL) ---")
+# El kernel RBF maneja fronteras complejas y no lineales
+modelo_rbf = SVC(kernel='rbf')
+modelo_rbf.fit(X, Y)
+print("Vectores de Soporte (RBF):")
+print(modelo_rbf.support_vectors_)
+
+# Predicción con un punto de prueba nuevo
+nuevo_punto = np.array([[5, 4]])
+prediccion = modelo_rbf.predict(nuevo_punto)
+clase_resultado = "Clase B (1)" if prediccion[0] == 1 else "Clase A (0)"
+print(f"\nEl punto de prueba [5,4] fue clasificado como: {clase_resultado}")
