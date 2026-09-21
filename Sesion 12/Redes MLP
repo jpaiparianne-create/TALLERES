@@ -1,1 +1,50 @@
 
+# ==============================================================================
+# TALLER 12: RED NEURONAL DENSA (MLP) CON PROPAGACIÓN HACIA ADELANTE EN NUMPY
+# ==============================================================================
+
+import numpy as np
+
+# 1. Función de Activación: Sigmoide (Mapea cualquier valor al rango entre 0 y 1)
+def sigmoide(x):
+    return 1 / (1 + np.exp(-x))
+
+print("--- EJECUCIÓN CON PROCESAMIENTO EN LOTE (BATCH DE 2 CLIENTES) ---")
+
+# 3. RETO DIMENSIONAL: Matriz X con 2 clientes al mismo tiempo (Matriz de 2x3)
+# Cliente 1: [0.5, 0.8, 0.2] | Cliente 2: [0.1, 0.9, 0.9]
+X = np.array([
+    [0.5, 0.8, 0.2],
+    [0.1, 0.9, 0.9]
+])
+
+# 2. CAPA OCULTA (4 Neuronas)
+# Matriz W1 de (3 entradas x 4 neuronas ocultas)
+W1 = np.array([
+    [ 0.1,  0.2,  0.3,  0.4],
+    [-0.5,  0.6,  0.7, -0.8],
+    [ 0.9, -0.1,  0.2,  0.3]
+])
+b1 = np.array([0.1, 0.2, 0.3, 0.4])  # 4 Sesgos para la capa oculta
+
+# Proceso Capa Oculta (Multiplicación matricial automática con NumPy)
+Z1 = np.dot(X, W1) + b1
+A1 = sigmoide(Z1)  # Salida de la capa oculta activada
+
+print("\nValores de Z1 (Puros):")
+print(np.round(Z1, 4))
+print("\nValores de A1 (Activados en rango 0 a 1):")
+print(np.round(A1, 4))
+
+# 3. CAPA DE SALIDA (1 Neurona final)
+# Matriz W2 de (4 entradas ocultas x 1 neurona final)
+W2 = np.array([0.5, 0.6, 0.7, 0.8])
+b2 = np.array([-0.1])
+
+# Proceso Capa Final
+Z2 = np.dot(A1, W2) + b2
+Salida_Final = sigmoide(Z2)
+
+print("\nPredicciones de la Red (Probabilidades para los 2 clientes):")
+for i, prob in enumerate(Salida_Final):
+    print(f"Cliente {i+1} - Probabilidad de Aprobación: {np.round(prob, 4)}")
